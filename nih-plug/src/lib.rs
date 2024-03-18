@@ -1,6 +1,6 @@
-use std::{sync::Arc, f32::consts::FRAC_1_SQRT_2};
 use nih_plug::prelude::*;
 use repeat::Repeat;
+use std::sync::Arc;
 mod repeat_parameters;
 use repeat_parameters::RepeatParameters;
 mod editor;
@@ -26,15 +26,15 @@ impl Plugin for DmRepeat {
   const URL: &'static str = "https://github.com/davemollen/dm-Repeat";
   const EMAIL: &'static str = "davemollen@gmail.com";
   const VERSION: &'static str = env!("CARGO_PKG_VERSION");
-  
+
   const AUDIO_IO_LAYOUTS: &'static [AudioIOLayout] = &[AudioIOLayout {
-    main_input_channels: NonZeroU32::new(2),
-    main_output_channels: NonZeroU32::new(2),
+    main_input_channels: NonZeroU32::new(1),
+    main_output_channels: NonZeroU32::new(1),
     ..AudioIOLayout::const_default()
   }];
   const MIDI_INPUT: MidiConfig = MidiConfig::None;
   const SAMPLE_ACCURATE_AUTOMATION: bool = true;
-  
+
   // More advanced plugins can use this to run expensive background tasks. See the field's
   // documentation for more information. `()` means that the plugin does not have any background
   // tasks.
@@ -71,23 +71,12 @@ impl Plugin for DmRepeat {
     let skew = self.params.skew.value();
 
     buffer.iter_samples().for_each(|mut channel_samples| {
-      let left_channel_in = channel_samples.get_mut(0).unwrap();
-      let input_left = *left_channel_in;
-      let right_channel_in = channel_samples.get_mut(1).unwrap();
-      let input_right = *right_channel_in;
-
-      let repeat_output = self.repeat.run(
-        (input_left + input_right) * FRAC_1_SQRT_2,
-        freq,
-        repeats as usize,
-        feedback,
-        skew
-      );
-
-      let left_channel_out = channel_samples.get_mut(0).unwrap();
-      *left_channel_out = repeat_output;
-      let right_channel_out = channel_samples.get_mut(1).unwrap();
-      *right_channel_out = repeat_output;
+      let input = channel_samples.get_mut(0).unwrap();
+      let repeat_output = self
+        .repeat
+        .run(*input, freq, repeats as usize, feedback, skew);
+      let output = channel_samples.get_mut(0).unwrap();
+      *output = repeat_output;
     });
     ProcessStatus::Normal
   }
@@ -112,10 +101,8 @@ impl ClapPlugin for DmRepeat {
 
 impl Vst3Plugin for DmRepeat {
   const VST3_CLASS_ID: [u8; 16] = *b"dm-Repeat.......";
-  const VST3_SUBCATEGORIES: &'static [Vst3SubCategory] = &[
-    Vst3SubCategory::Fx, 
-    Vst3SubCategory::Delay
-  ];
+  const VST3_SUBCATEGORIES: &'static [Vst3SubCategory] =
+    &[Vst3SubCategory::Fx, Vst3SubCategory::Delay];
 }
 
 nih_export_clap!(DmRepeat);

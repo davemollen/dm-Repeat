@@ -57,7 +57,7 @@ impl Repeat {
       ..
     } = self;
 
-    let ramp = self.ramp.process(5., 0., 1.);
+    let ramp = self.ramp.process(5.);
     let window = (ramp * FRAC_PI_2).fast_cos();
     let window = window * window;
 
@@ -103,7 +103,7 @@ impl Repeat {
       (true, true) => {
         self.variable_parameters[0] = self.variable_parameters[1];
         self.variable_parameters[1] = current_parameters;
-        self.ramp.start(None);
+        self.ramp.start();
         self.crossfade(input)
       }
       _ => self.crossfade(input),

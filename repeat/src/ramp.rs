@@ -18,6 +18,38 @@ impl Ramp {
     }
   }
 
+  pub fn start(&mut self, starts_at: Option<f32>) {
+    self.is_active = true;
+    self.x = starts_at;
+  }
+
+  pub fn run(&mut self, freq: f32, min: f32, max: f32) -> f32 {
+    let x = self.get_x(freq, min, max);
+    self.set_progress(x, min, max);
+    x
+  }
+
+  pub fn get_progress(&self) -> f32 {
+    self.progress
+  }
+
+  pub fn is_finished(&self) -> bool {
+    !self.is_active
+  }
+  
+  fn get_x(&mut self, freq: f32, min: f32, max: f32) -> f32 {
+    if self.is_active {
+      let step_size = self.get_step_size(freq);
+
+      match self.x {
+        None => self.initialize(step_size, min, max),
+        Some(current_x) => self.keep_between_bounds(current_x + step_size, min, max),
+      }
+    } else {
+      self.x.unwrap()
+    }
+  }
+
   fn initialize(&mut self, step_size: f32, min: f32, max: f32) -> f32 {
     let x = if step_size > 0. { min } else { max };
     self.started_in_reverse = step_size < 0.;
@@ -44,38 +76,6 @@ impl Ramp {
     }
     let x = next_x.max(min).min(max);
     self.x = Some(x);
-    x
-  }
-
-  pub fn get_progress(&self) -> f32 {
-    self.progress
-  }
-
-  pub fn start(&mut self, starts_at: Option<f32>) {
-    self.is_active = true;
-    self.x = starts_at;
-  }
-
-  pub fn is_finished(&self) -> bool {
-    !self.is_active
-  }
-
-  pub fn get_x(&mut self, freq: f32, min: f32, max: f32) -> f32 {
-    if self.is_active {
-      let step_size = self.get_step_size(freq);
-
-      match self.x {
-        None => self.initialize(step_size, min, max),
-        Some(current_x) => self.keep_between_bounds(current_x + step_size, min, max),
-      }
-    } else {
-      self.x.unwrap()
-    }
-  }
-
-  pub fn run(&mut self, freq: f32, min: f32, max: f32) -> f32 {
-    let x = self.get_x(freq, min, max);
-    self.set_progress(x, min, max);
     x
   }
 }

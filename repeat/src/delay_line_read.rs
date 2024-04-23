@@ -1,7 +1,6 @@
 use crate::{
   delay_line::{DelayLine, Interpolation},
-  float_ext::FloatExt,
-  repeat::MAX_REPEATS,
+  float_ext::FloatExt, MAX_REPEATS,
 };
 
 #[derive(Clone, Copy)]
@@ -12,6 +11,30 @@ pub struct DelayLineRead {
 impl DelayLineRead {
   pub fn new() -> Self {
     Self { previous_time: 0. }
+  }
+
+  pub fn run(
+    &mut self,
+    input: f32,
+    delay_line: &mut DelayLine,
+    time_in_ms: f32,
+    repeats: usize,
+    feedback: f32,
+    skew: f32,
+  ) -> f32 {
+    (0..MAX_REPEATS)
+      .take(repeats)
+      .map(|index| {
+        let index = index as f32;
+        let gain = self.simulate_feedback(index, feedback, repeats);
+        if index == 0. {
+          input * gain
+        } else {
+          let time = self.get_delay_time(index, time_in_ms, skew);
+          delay_line.read(time, Interpolation::Step) * gain
+        }
+      })
+      .sum()
   }
 
   fn reverse_indices(&self, index: f32, input: f32, repeats: usize) -> f32 {
@@ -48,30 +71,6 @@ impl DelayLineRead {
       self.previous_time = delay_time;
       delay_time
     }
-  }
-
-  pub fn run(
-    &mut self,
-    input: f32,
-    delay_line: &mut DelayLine,
-    time_in_ms: f32,
-    repeats: usize,
-    feedback: f32,
-    skew: f32,
-  ) -> f32 {
-    (0..MAX_REPEATS)
-      .take(repeats)
-      .map(|index| {
-        let index = index as f32;
-        let gain = self.simulate_feedback(index, feedback, repeats);
-        if index == 0. {
-          input * gain
-        } else {
-          let time = self.get_delay_time(index, time_in_ms, skew);
-          delay_line.read(time, Interpolation::Step) * gain
-        }
-      })
-      .sum()
   }
 }
 

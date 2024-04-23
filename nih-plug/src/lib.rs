@@ -74,7 +74,7 @@ impl Plugin for DmRepeat {
       let input = channel_samples.get_mut(0).unwrap();
       let repeat_output = self
         .repeat
-        .run(*input, freq, repeats as usize, feedback, skew);
+        .process(*input, freq, repeats as usize, feedback, skew);
       let output = channel_samples.get_mut(0).unwrap();
       *output = repeat_output;
     });

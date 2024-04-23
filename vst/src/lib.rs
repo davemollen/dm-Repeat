@@ -60,7 +60,7 @@ impl Plugin for DmRepeat {
 
     for (input_buffer, output_buffer) in buffer.zip() {
       for (input_sample, output_sample) in input_buffer.iter().zip(output_buffer) {
-        *output_sample = self.repeat.run(
+        *output_sample = self.repeat.process(
           *input_sample,
           freq,
           repeats as usize,

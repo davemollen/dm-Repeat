@@ -13,7 +13,7 @@ impl DelayLineRead {
     Self { previous_time: 0. }
   }
 
-  pub fn run(
+  pub fn process(
     &mut self,
     input: f32,
     delay_line: &mut DelayLine,

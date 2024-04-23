@@ -23,7 +23,7 @@ impl Ramp {
     self.x = starts_at;
   }
 
-  pub fn run(&mut self, freq: f32, min: f32, max: f32) -> f32 {
+  pub fn process(&mut self, freq: f32, min: f32, max: f32) -> f32 {
     let x = self.get_x(freq, min, max);
     self.set_progress(x, min, max);
     x
@@ -95,18 +95,18 @@ mod tests {
   fn forward_ramp() {
     let mut ramp = Ramp::new(10.);
     ramp.start(None);
-    assert_approximately_eq(ramp.run(1., 0., 1.), 0.);
-    assert_approximately_eq(ramp.run(1., 0., 1.), 0.1);
-    assert_approximately_eq(ramp.run(1., 0., 1.), 0.2);
+    assert_approximately_eq(ramp.process(1., 0., 1.), 0.);
+    assert_approximately_eq(ramp.process(1., 0., 1.), 0.1);
+    assert_approximately_eq(ramp.process(1., 0., 1.), 0.2);
   }
 
   #[test]
   fn backwards_ramp() {
     let mut ramp = Ramp::new(10.);
     ramp.start(None);
-    assert_approximately_eq(ramp.run(-1., 0., 1.), 1.);
-    assert_approximately_eq(ramp.run(-1., 0., 1.), 0.9);
-    assert_approximately_eq(ramp.run(-1., 0., 1.), 0.8);
+    assert_approximately_eq(ramp.process(-1., 0., 1.), 1.);
+    assert_approximately_eq(ramp.process(-1., 0., 1.), 0.9);
+    assert_approximately_eq(ramp.process(-1., 0., 1.), 0.8);
   }
 
   #[test]
@@ -114,10 +114,10 @@ mod tests {
     let mut ramp = Ramp::new(10.);
     ramp.start(Some(0.5));
     assert_approximately_eq(ramp.x.unwrap(), 0.5);
-    assert_approximately_eq(ramp.run(1., 0., 1.), 0.6);
+    assert_approximately_eq(ramp.process(1., 0., 1.), 0.6);
     ramp.start(Some(0.6));
     assert_approximately_eq(ramp.x.unwrap(), 0.6);
-    assert_approximately_eq(ramp.run(1., 0., 1.), 0.7);
+    assert_approximately_eq(ramp.process(1., 0., 1.), 0.7);
   }
 
   #[test]
@@ -126,17 +126,17 @@ mod tests {
     ramp.start(None);
     assert!(ramp.is_active);
     assert!(!ramp.is_finished());
-    assert_approximately_eq(ramp.run(1., 0., 1.), 0.);
+    assert_approximately_eq(ramp.process(1., 0., 1.), 0.);
     assert!(ramp.is_active);
-    assert_approximately_eq(ramp.run(1., 0., 1.), 0.2);
+    assert_approximately_eq(ramp.process(1., 0., 1.), 0.2);
     assert!(ramp.is_active);
-    assert_approximately_eq(ramp.run(1., 0., 1.), 0.4);
+    assert_approximately_eq(ramp.process(1., 0., 1.), 0.4);
     assert!(ramp.is_active);
-    assert_approximately_eq(ramp.run(1., 0., 1.), 0.6);
+    assert_approximately_eq(ramp.process(1., 0., 1.), 0.6);
     assert!(ramp.is_active);
-    assert_approximately_eq(ramp.run(1., 0., 1.), 0.8);
+    assert_approximately_eq(ramp.process(1., 0., 1.), 0.8);
     assert!(ramp.is_active);
-    assert_approximately_eq(ramp.run(1., 0., 1.), 1.);
+    assert_approximately_eq(ramp.process(1., 0., 1.), 1.);
     assert!(ramp.is_active == false);
     assert!(ramp.is_finished())
   }
@@ -145,14 +145,14 @@ mod tests {
   fn stays_between_bounds() {
     let mut ramp = Ramp::new(10.);
     ramp.start(Some(1.));
-    assert_approximately_eq(ramp.run(1., 0., 1.2), 1.1);
-    assert_approximately_eq(ramp.run(1., 0., 1.2), 1.2);
+    assert_approximately_eq(ramp.process(1., 0., 1.2), 1.1);
+    assert_approximately_eq(ramp.process(1., 0., 1.2), 1.2);
     assert!(ramp.is_active == false);
     assert!(ramp.is_finished());
 
     ramp.start(Some(0.));
-    assert_approximately_eq(ramp.run(-1., -0.2, 1.), -0.1);
-    assert_approximately_eq(ramp.run(-1., -0.2, 1.), -0.2);
+    assert_approximately_eq(ramp.process(-1., -0.2, 1.), -0.1);
+    assert_approximately_eq(ramp.process(-1., -0.2, 1.), -0.2);
     assert!(ramp.is_active == false);
     assert!(ramp.is_finished())
   }
@@ -161,39 +161,39 @@ mod tests {
   fn get_progress() {
     let mut ramp = Ramp::new(10.);
     ramp.start(None);
-    assert_approximately_eq(ramp.run(1., 0., 1.), 0.);
+    assert_approximately_eq(ramp.process(1., 0., 1.), 0.);
     assert_approximately_eq(ramp.get_progress(), 0.);
-    assert_approximately_eq(ramp.run(1., 0., 1.), 0.1);
+    assert_approximately_eq(ramp.process(1., 0., 1.), 0.1);
     assert_approximately_eq(ramp.get_progress(), 0.1);
-    assert_approximately_eq(ramp.run(1., 0., 1.), 0.2);
+    assert_approximately_eq(ramp.process(1., 0., 1.), 0.2);
     assert_approximately_eq(ramp.get_progress(), 0.2);
 
     ramp.start(None);
-    assert_approximately_eq(ramp.run(1., 0., 2.), 0.);
+    assert_approximately_eq(ramp.process(1., 0., 2.), 0.);
     assert_approximately_eq(ramp.get_progress(), 0.);
-    assert_approximately_eq(ramp.run(1., 0., 2.), 0.1);
+    assert_approximately_eq(ramp.process(1., 0., 2.), 0.1);
     assert_approximately_eq(ramp.get_progress(), 0.05);
-    assert_approximately_eq(ramp.run(1., 0., 2.), 0.2);
+    assert_approximately_eq(ramp.process(1., 0., 2.), 0.2);
     assert_approximately_eq(ramp.get_progress(), 0.1);
 
     ramp.start(None);
-    assert_approximately_eq(ramp.run(-1., 0., 2.), 2.);
+    assert_approximately_eq(ramp.process(-1., 0., 2.), 2.);
     assert_approximately_eq(ramp.get_progress(), 0.);
-    assert_approximately_eq(ramp.run(-1., 0., 2.), 1.9);
+    assert_approximately_eq(ramp.process(-1., 0., 2.), 1.9);
     assert_approximately_eq(ramp.get_progress(), 0.05);
-    assert_approximately_eq(ramp.run(-1., 0., 2.), 1.8);
+    assert_approximately_eq(ramp.process(-1., 0., 2.), 1.8);
     assert_approximately_eq(ramp.get_progress(), 0.1);
 
     ramp.start(None);
-    assert_approximately_eq(ramp.run(1., 0., 1.), 0.);
+    assert_approximately_eq(ramp.process(1., 0., 1.), 0.);
     assert_approximately_eq(ramp.get_progress(), 0.);
-    assert_approximately_eq(ramp.run(1., 0., 1.), 0.1);
+    assert_approximately_eq(ramp.process(1., 0., 1.), 0.1);
     assert_approximately_eq(ramp.get_progress(), 0.1);
-    assert_approximately_eq(ramp.run(1., 0., 1.), 0.2);
+    assert_approximately_eq(ramp.process(1., 0., 1.), 0.2);
     assert_approximately_eq(ramp.get_progress(), 0.2);
-    assert_approximately_eq(ramp.run(-1., 0., 1.), 0.1);
+    assert_approximately_eq(ramp.process(-1., 0., 1.), 0.1);
     assert_approximately_eq(ramp.get_progress(), 0.1);
-    assert_approximately_eq(ramp.run(-1., 0., 1.), 0.);
+    assert_approximately_eq(ramp.process(-1., 0., 1.), 0.);
     assert_approximately_eq(ramp.get_progress(), 0.);
     assert!(ramp.is_finished());
   }

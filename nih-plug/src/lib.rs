@@ -71,12 +71,11 @@ impl Plugin for DmRepeat {
     let skew = self.params.skew.value();
 
     buffer.iter_samples().for_each(|mut channel_samples| {
-      let input = channel_samples.get_mut(0).unwrap();
+      let sample = channel_samples.iter_mut().next().unwrap();
       let repeat_output = self
         .repeat
-        .process(*input, freq, repeats as usize, feedback, skew);
-      let output = channel_samples.get_mut(0).unwrap();
-      *output = repeat_output;
+        .process(*sample, freq, repeats as usize, feedback, skew);
+      *sample = repeat_output;
     });
     ProcessStatus::Normal
   }

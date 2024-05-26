@@ -3,11 +3,7 @@ mod delay_line_read;
 mod float_ext;
 mod ramp;
 use {
-  delay_line::DelayLine,
-  delay_line_read::DelayLineRead,
-  float_ext::FloatExt,
-  ramp::Ramp,
-  std::f32,
+  delay_line::DelayLine, delay_line_read::DelayLineRead, float_ext::FloatExt, ramp::Ramp, std::f32,
   std::f32::consts::FRAC_PI_2,
 };
 
@@ -39,11 +35,18 @@ impl Repeat {
         feedback: 0.,
         skew: 0.,
       }; 2],
-      ramp: Ramp::new(sample_rate),
+      ramp: Ramp::new(sample_rate, 5.),
     }
   }
 
-  pub fn process(&mut self, input: f32, freq: f32, repeats: usize, feedback: f32, skew: f32) -> f32 {
+  pub fn process(
+    &mut self,
+    input: f32,
+    freq: f32,
+    repeats: usize,
+    feedback: f32,
+    skew: f32,
+  ) -> f32 {
     let repeated = self.repeat(input, freq, repeats, feedback, skew);
     self.delay_line.write(input);
     repeated
@@ -57,7 +60,7 @@ impl Repeat {
       ..
     } = self;
 
-    let ramp = self.ramp.process(5.);
+    let ramp = self.ramp.process();
     let window = (ramp * FRAC_PI_2).fast_cos();
     let window = window * window;
 

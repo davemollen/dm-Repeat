@@ -1,36 +1,69 @@
 use crate::{
   delay_line::{DelayLine, Interpolation},
-  float_ext::FloatExt, MAX_REPEATS,
+  float_ext::FloatExt,
+  Params, MAX_REPEATS,
 };
 
-#[derive(Clone, Copy)]
+#[derive(Clone)]
+struct DelayParams {
+  index: usize,
+  time: f32,
+  gain: f32,
+}
+
 pub struct DelayLineRead {
   previous_time: f32,
+  delay_params: Vec<DelayParams>,
+  params: Params,
 }
 
 impl DelayLineRead {
   pub fn new() -> Self {
-    Self { previous_time: 0. }
+    Self {
+      previous_time: 0.,
+      delay_params: Vec::with_capacity(MAX_REPEATS),
+      params: Params {
+        repeats: 4,
+        time: 200.,
+        feedback: 0.,
+        skew: 0.,
+      },
+    }
   }
 
-  pub fn process(
-    &mut self,
-    input: f32,
-    delay_line: &mut DelayLine,
-    time_in_ms: f32,
-    repeats: usize,
-    feedback: f32,
-    skew: f32,
-  ) -> f32 {
-    (0..MAX_REPEATS)
-      .take(repeats)
+  pub fn get_params(&self) -> Params {
+    self.params
+  }
+
+  pub fn initialize(&mut self, time: f32, repeats: usize, feedback: f32, skew: f32) {
+    self.delay_params.clear();
+    self.delay_params = (0..repeats)
       .map(|index| {
-        let index = index as f32;
-        let gain = self.simulate_feedback(index, feedback, repeats);
-        if index == 0. {
+        let i = index as f32;
+        let gain = self.simulate_feedback(i, feedback, repeats);
+        let time = self.get_delay_time(i, time, skew);
+
+        DelayParams { index, gain, time }
+      })
+      .collect();
+    self.params = Params {
+      time,
+      repeats,
+      feedback,
+      skew,
+    }
+  }
+
+  pub fn process(&mut self, input: f32, delay_line: &mut DelayLine) -> f32 {
+    self
+      .delay_params
+      .iter()
+      .map(|p| {
+        let DelayParams { index, gain, time } = *p;
+
+        if index == 0 {
           input * gain
         } else {
-          let time = self.get_delay_time(index, time_in_ms, skew);
           delay_line.read(time, Interpolation::Step) * gain
         }
       })

@@ -16,6 +16,7 @@ struct Ports {
 #[uri("https://github.com/davemollen/dm-Repeat")]
 struct DmRepeat {
   repeat: Repeat,
+  is_active: bool,
 }
 
 impl Plugin for DmRepeat {
@@ -30,21 +31,27 @@ impl Plugin for DmRepeat {
   fn new(_plugin_info: &PluginInfo, _features: &mut ()) -> Option<Self> {
     Some(Self {
       repeat: Repeat::new(_plugin_info.sample_rate() as f32),
+      is_active: false,
     })
   }
 
   // Process a chunk of audio. The audio ports are dereferenced to slices, which the plugin
   // iterates over.
   fn run(&mut self, ports: &mut Ports, _features: &mut (), _sample_count: u32) {
-    let frequency = *ports.freq;
-    let repeats = *ports.repeats;
+    let time = *ports.freq.recip() * 1000.;
+    let repeats = *ports.repeats as usize;
     let feedback = *ports.feedback * 0.01;
     let skew = *ports.skew * 0.01;
 
-    for (in_frame, out_frame) in Iterator::zip(ports.input.iter(), ports.output.iter_mut()) {
+    if !self.is_active {
+      self.repeat.initialize_params(time, repeats, feedback, skew);
+      self.is_active = true;
+    }
+
+    for (in_frame, out_frame) in ports.input.iter().zip(ports.output.iter_mut()) {
       *out_frame = self
         .repeat
-        .process(*in_frame, frequency, repeats as usize, feedback, skew);
+        .process(*in_frame, time, repeats, feedback, skew);
     }
   }
 }

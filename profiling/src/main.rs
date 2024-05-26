@@ -7,6 +7,6 @@ fn main() {
 
   loop {
     let input = generate_signal();
-    repeat.process(input, 7., 16, 1., -0.25);
+    repeat.process(input, 100., 16, 1., -0.25);
   }
 }

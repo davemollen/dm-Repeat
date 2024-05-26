@@ -4,18 +4,20 @@ mod editor;
 use editor::RepeatEditor;
 mod repeat_parameters;
 use repeat::Repeat;
-use repeat_parameters::{RepeatParameters, Params};
+use repeat_parameters::{Params, RepeatParameters};
 use std::sync::Arc;
 use vst::{
   buffer::AudioBuffer,
+  editor::Editor,
   plugin::{Category, Info, Plugin, PluginParameters},
-  prelude::HostCallback, editor::Editor,
+  prelude::HostCallback,
 };
 
 struct DmRepeat {
   params: Arc<RepeatParameters>,
   repeat: Repeat,
   editor: Option<RepeatEditor>,
+  is_active: bool,
 }
 
 impl Plugin for DmRepeat {
@@ -29,7 +31,8 @@ impl Plugin for DmRepeat {
         params: params.clone(),
         is_open: false,
         host: Some(host),
-      })
+      }),
+      is_active: false,
     }
   }
 
@@ -53,20 +56,21 @@ impl Plugin for DmRepeat {
   }
 
   fn process(&mut self, buffer: &mut AudioBuffer<f32>) {
-    let freq = self.params.freq.get_value();
-    let repeats = self.params.repeats.get_value();
+    let time = self.params.freq.get_value().recip() * 1000.;
+    let repeats = self.params.repeats.get_value() as usize;
     let feedback = self.params.feedback.get_value();
     let skew = self.params.skew.get_value();
 
+    if !self.is_active {
+      self.repeat.initialize_params(time, repeats, feedback, skew);
+      self.is_active = true;
+    }
+
     for (input_buffer, output_buffer) in buffer.zip() {
       for (input_sample, output_sample) in input_buffer.iter().zip(output_buffer) {
-        *output_sample = self.repeat.process(
-          *input_sample,
-          freq,
-          repeats as usize,
-          feedback,
-          skew,
-        );
+        *output_sample = self
+          .repeat
+          .process(*input_sample, freq, repeats, feedback, skew);
       }
     }
   }

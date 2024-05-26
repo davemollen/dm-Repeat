@@ -10,6 +10,17 @@ struct DmRepeat {
   repeat: Repeat,
 }
 
+impl DmRepeat {
+  fn get_params(&self) -> (f32, usize, f32, f32) {
+    (
+      self.params.freq.value().recip() * 1000.,
+      self.params.repeats.value() as usize,
+      self.params.feedback.value(),
+      self.params.skew.value(),
+    )
+  }
+}
+
 impl Default for DmRepeat {
   fn default() -> Self {
     let params = Arc::new(RepeatParameters::default());
@@ -56,6 +67,8 @@ impl Plugin for DmRepeat {
     _context: &mut impl InitContext<Self>,
   ) -> bool {
     self.repeat = Repeat::new(buffer_config.sample_rate);
+    let (time, repeats, feedback, skew) = self.get_params();
+    self.repeat.initialize_params(time, repeats, feedback, skew);
     true
   }
 
@@ -65,16 +78,11 @@ impl Plugin for DmRepeat {
     _aux: &mut AuxiliaryBuffers,
     _context: &mut impl ProcessContext<Self>,
   ) -> ProcessStatus {
-    let freq = self.params.freq.value();
-    let repeats = self.params.repeats.value();
-    let feedback = self.params.feedback.value();
-    let skew = self.params.skew.value();
+    let (time, repeats, feedback, skew) = self.get_params();
 
     buffer.iter_samples().for_each(|mut channel_samples| {
       let sample = channel_samples.iter_mut().next().unwrap();
-      let repeat_output = self
-        .repeat
-        .process(*sample, freq, repeats as usize, feedback, skew);
+      let repeat_output = self.repeat.process(*sample, time, repeats, feedback, skew);
       *sample = repeat_output;
     });
     ProcessStatus::Normal

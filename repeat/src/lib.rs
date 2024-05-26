@@ -64,19 +64,37 @@ impl Repeat {
     let window = (ramp * FRAC_PI_2).fast_cos();
     let window = window * window;
 
-    (0..2)
-      .map(|index| {
-        let window = if index == 1 { 1. - window } else { window };
-        repeats[index].process(
-          input,
-          delay_line,
-          variable_parameters[index].time_in_ms,
-          variable_parameters[index].repeats,
-          variable_parameters[index].feedback,
-          variable_parameters[index].skew,
-        ) * window
-      })
-      .sum()
+    let a = repeats[0].process(
+      input,
+      delay_line,
+      variable_parameters[0].time_in_ms,
+      variable_parameters[0].repeats,
+      variable_parameters[0].feedback,
+      variable_parameters[0].skew,
+    ) * window;
+    let b = repeats[1].process(
+      input,
+      delay_line,
+      variable_parameters[1].time_in_ms,
+      variable_parameters[1].repeats,
+      variable_parameters[1].feedback,
+      variable_parameters[1].skew,
+    ) * (1. - window);
+    a + b
+
+    // (0..2)
+    //   .map(|index| {
+    //     let window = if index == 1 { 1. - window } else { window };
+    //     repeats[index].process(
+    //       input,
+    //       delay_line,
+    //       variable_parameters[index].time_in_ms,
+    //       variable_parameters[index].repeats,
+    //       variable_parameters[index].feedback,
+    //       variable_parameters[index].skew,
+    //     ) * window
+    //   })
+    //   .sum()
   }
 
   fn repeat(&mut self, input: f32, freq: f32, repeats: usize, feedback: f32, skew: f32) -> f32 {
@@ -106,6 +124,7 @@ impl Repeat {
       (true, true) => {
         self.variable_parameters[0] = self.variable_parameters[1];
         self.variable_parameters[1] = current_parameters;
+        // self.repeats.set_values();
         self.ramp.start();
         self.crossfade(input)
       }

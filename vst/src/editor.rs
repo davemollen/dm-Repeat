@@ -1,12 +1,12 @@
 mod ui;
-pub use ui::plugin_gui;
 use crate::RepeatParameters;
 use std::sync::Arc;
+pub use ui::plugin_gui;
 use vizia::{prelude::WindowSize, Application, ParentWindow};
 use vst::{editor::Editor, prelude::HostCallback};
 
 pub const WINDOW_SIZE: WindowSize = WindowSize {
-  width: 360,
+  width: 400,
   height: 200,
 };
 

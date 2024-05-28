@@ -11,12 +11,13 @@ struct DmRepeat {
 }
 
 impl DmRepeat {
-  fn get_params(&self) -> (f32, usize, f32, f32) {
+  fn get_params(&self) -> (f32, usize, f32, f32, bool) {
     (
       self.params.freq.value().recip() * 1000.,
       self.params.repeats.value() as usize,
       self.params.feedback.value(),
       self.params.skew.value(),
+      self.params.limiter.value(),
     )
   }
 }
@@ -67,7 +68,7 @@ impl Plugin for DmRepeat {
     _context: &mut impl InitContext<Self>,
   ) -> bool {
     self.repeat = Repeat::new(buffer_config.sample_rate);
-    let (time, repeats, feedback, skew) = self.get_params();
+    let (time, repeats, feedback, skew, _) = self.get_params();
     self.repeat.initialize_params(time, repeats, feedback, skew);
     true
   }
@@ -78,11 +79,13 @@ impl Plugin for DmRepeat {
     _aux: &mut AuxiliaryBuffers,
     _context: &mut impl ProcessContext<Self>,
   ) -> ProcessStatus {
-    let (time, repeats, feedback, skew) = self.get_params();
+    let (time, repeats, feedback, skew, limiter) = self.get_params();
 
     buffer.iter_samples().for_each(|mut channel_samples| {
       let sample = channel_samples.iter_mut().next().unwrap();
-      let repeat_output = self.repeat.process(*sample, time, repeats, feedback, skew);
+      let repeat_output = self
+        .repeat
+        .process(*sample, time, repeats, feedback, skew, limiter);
       *sample = repeat_output;
     });
     ProcessStatus::Normal

@@ -11,7 +11,7 @@ fn repeat_bench(c: &mut Criterion) {
   c.bench_function("repeat", |b| {
     b.iter(|| {
       for signal in &signal_stream {
-        repeat.process(*signal, 100., 16, 1., -0.25);
+        repeat.process(*signal, 100., 16, 1., -0.25, true);
       }
     })
   });

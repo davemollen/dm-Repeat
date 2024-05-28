@@ -1,7 +1,8 @@
 use crate::repeat_parameters::{Params, RepeatParameters};
 use std::sync::Arc;
 use vizia::{
-  prelude::{Lens, Wrapper, Event, EventContext}, model::Model
+  model::Model,
+  prelude::{Event, EventContext, Lens, Wrapper},
 };
 use vst::{host::Host, prelude::HostCallback};
 
@@ -20,7 +21,8 @@ pub enum ParamChangeEvent {
   SetFreq(f32),
   SetRepeats(f32),
   SetFeedback(f32),
-  SetSkew(f32)
+  SetSkew(f32),
+  SetLimiter(bool),
 }
 
 #[derive(Lens)]
@@ -41,11 +43,7 @@ impl Model for UiData {
       ParamChangeEvent::SetRepeats(value) => {
         let param = &self.params.repeats;
         param.set_normalized_value(*value);
-        notify_host_parameter_changed(
-          param.index,
-          param.get_normalized_value(),
-          self.host,
-        );
+        notify_host_parameter_changed(param.index, param.get_normalized_value(), self.host);
       }
 
       ParamChangeEvent::SetFeedback(value) => {
@@ -58,6 +56,16 @@ impl Model for UiData {
         let param = &self.params.skew;
         param.set_plain_value(*value);
         notify_host_parameter_changed(param.index, *value, self.host);
+      }
+
+      ParamChangeEvent::SetLimiter(value) => {
+        let param = &self.params.limiter;
+        param.set_plain_value(*value);
+        notify_host_parameter_changed(
+          param.index,
+          param.preview_normalized_value(*value),
+          self.host,
+        );
       }
     });
   }

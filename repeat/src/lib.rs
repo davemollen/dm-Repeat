@@ -1,10 +1,13 @@
 mod delay_line;
 mod delay_line_read;
-mod float_ext;
+mod shared {
+  pub mod float_ext;
+}
+mod limiter;
 mod ramp;
 use {
-  delay_line::DelayLine, delay_line_read::DelayLineRead, float_ext::FloatExt, ramp::Ramp, std::f32,
-  std::f32::consts::FRAC_PI_2,
+  delay_line::DelayLine, delay_line_read::DelayLineRead, limiter::Limiter, ramp::Ramp,
+  shared::float_ext::FloatExt, std::f32, std::f32::consts::FRAC_PI_2,
 };
 
 pub const MAX_REPEATS: usize = 32;
@@ -19,18 +22,20 @@ pub struct Params {
 
 pub struct Repeat {
   delay_line: DelayLine,
+  active_index: usize,
   repeats: [DelayLineRead; 2],
   ramp: Ramp,
-  active_index: usize,
+  limiter: Limiter,
 }
 
 impl Repeat {
   pub fn new(sample_rate: f32) -> Self {
     Self {
       delay_line: DelayLine::new(sample_rate as usize * 10, sample_rate),
+      active_index: 0,
       repeats: [DelayLineRead::new(), DelayLineRead::new()],
       ramp: Ramp::new(sample_rate, 5.),
-      active_index: 0,
+      limiter: Limiter::new(sample_rate, 2., 10., 40., 0.966051),
     }
   }
 
@@ -45,10 +50,11 @@ impl Repeat {
     repeats: usize,
     feedback: f32,
     skew: f32,
+    limiter: bool,
   ) -> f32 {
     let repeated = self.repeat(input, time, repeats, feedback, skew);
     self.delay_line.write(input);
-    repeated
+    self.limiter.process(repeated, limiter)
   }
 
   fn crossfade(&mut self, input: f32) -> f32 {

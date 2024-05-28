@@ -60,6 +60,7 @@ impl Plugin for DmRepeat {
     let repeats = self.params.repeats.get_value() as usize;
     let feedback = self.params.feedback.get_value();
     let skew = self.params.skew.get_value();
+    let limiter = self.params.limiter.get_value();
 
     if !self.is_active {
       self.repeat.initialize_params(time, repeats, feedback, skew);
@@ -70,7 +71,7 @@ impl Plugin for DmRepeat {
       for (input_sample, output_sample) in input_buffer.iter().zip(output_buffer) {
         *output_sample = self
           .repeat
-          .process(*input_sample, freq, repeats, feedback, skew);
+          .process(*input_sample, time, repeats, feedback, skew, limiter);
       }
     }
   }

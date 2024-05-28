@@ -3,6 +3,8 @@ mod float_param;
 pub use float_param::{FloatParam, FloatRange};
 mod int_param;
 pub use int_param::{IntParam, IntRange};
+mod bool_param;
+pub use bool_param::BoolParam;
 
 pub trait Params {
   type Plain: PartialEq;

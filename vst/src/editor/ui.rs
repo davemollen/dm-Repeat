@@ -1,21 +1,27 @@
-#[path="./components/param_knob.rs"]
+#[path = "./components/param_knob.rs"]
 mod param_knob;
 use param_knob::{ParamKnob, ParamKnobSize};
-#[path="./components/param_int_knob.rs"]
+#[path = "./components/param_checkbox.rs"]
+mod param_checkbox;
+use param_checkbox::ParamCheckbox;
+#[path = "./components/param_int_knob.rs"]
 mod param_int_knob;
 use param_int_knob::{ParamIntKnob, ParamIntKnobSize};
-#[path="ui_data.rs"]
+#[path = "ui_data.rs"]
 mod ui_data;
-use ui_data::{UiData, ParamChangeEvent};
-use vizia::{
-  views::{VStack, HStack, Label}, 
-  context::Context, 
-  prelude::{Units::{Stretch, Pixels}, FontWeightKeyword, LayoutType}, 
-  modifiers::{LayoutModifiers, StyleModifiers, TextModifiers}, 
-  model::Model, layout::Units::Auto
-};
 use crate::repeat_parameters::RepeatParameters;
 use std::sync::Arc;
+use ui_data::{ParamChangeEvent, UiData};
+use vizia::{
+  context::Context,
+  model::Model,
+  modifiers::{LayoutModifiers, StyleModifiers, TextModifiers},
+  prelude::{
+    FontWeightKeyword,
+    Units::{Pixels, Stretch},
+  },
+  views::{HStack, Label, VStack},
+};
 use vst::prelude::HostCallback;
 
 const STYLE: &str = include_str!("style.css");
@@ -26,8 +32,9 @@ pub fn plugin_gui(cx: &mut Context, params: Arc<RepeatParameters>, host: Option<
   UiData {
     params: params.clone(),
     host,
-  }.build(cx);
-  
+  }
+  .build(cx);
+
   VStack::new(cx, |cx| {
     HStack::new(cx, |cx| {
       ParamKnob::new(
@@ -36,36 +43,48 @@ pub fn plugin_gui(cx: &mut Context, params: Arc<RepeatParameters>, host: Option<
         UiData::params,
         |params| &params.freq,
         |val| ParamChangeEvent::SetFreq(val),
-        ParamKnobSize::Regular
+        ParamKnobSize::Regular,
       );
-      
+
       ParamIntKnob::new(
         cx,
         params.repeats.name,
         UiData::params,
         |params| &params.repeats,
         |val| ParamChangeEvent::SetRepeats(val),
-        ParamIntKnobSize::Regular
+        ParamIntKnobSize::Regular,
       );
-      
+
       ParamKnob::new(
         cx,
         params.feedback.name,
         UiData::params,
         |params| &params.feedback,
         |val| ParamChangeEvent::SetFeedback(val),
-        ParamKnobSize::Regular
+        ParamKnobSize::Regular,
       );
-      
+
       ParamKnob::new(
         cx,
         params.skew.name,
         UiData::params,
         |params| &params.skew,
         |val| ParamChangeEvent::SetSkew(val),
-        ParamKnobSize::Regular
-      ).top(Pixels(12.0));
-    }).child_space(Stretch(1.0)).col_between(Pixels(8.0));
+        ParamKnobSize::Regular,
+      )
+      .top(Pixels(12.0));
+
+      ParamCheckbox::new(
+        cx,
+        params.limiter.name,
+        UiData::params,
+        |params| &params.limiter,
+        |val| ParamChangeEvent::SetLimiter(val),
+      )
+      .top(Pixels(12.0));
+    })
+    .child_space(Stretch(1.0))
+    .col_between(Pixels(8.0));
 
     Label::new(cx, "dm-Repeat")
       .font_size(22.0)

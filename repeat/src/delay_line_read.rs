@@ -1,6 +1,6 @@
 use crate::{
   delay_line::{DelayLine, Interpolation},
-  float_ext::FloatExt,
+  shared::float_ext::FloatExt,
   Params, MAX_REPEATS,
 };
 

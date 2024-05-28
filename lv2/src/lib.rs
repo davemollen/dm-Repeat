@@ -42,6 +42,7 @@ impl Plugin for DmRepeat {
     let repeats = *ports.repeats as usize;
     let feedback = *ports.feedback * 0.01;
     let skew = *ports.skew * 0.01;
+    let limiter = *ports.limiter == 1.;
 
     if !self.is_active {
       self.repeat.initialize_params(time, repeats, feedback, skew);
@@ -51,7 +52,7 @@ impl Plugin for DmRepeat {
     for (in_frame, out_frame) in ports.input.iter().zip(ports.output.iter_mut()) {
       *out_frame = self
         .repeat
-        .process(*in_frame, time, repeats, feedback, skew);
+        .process(*in_frame, time, repeats, feedback, skew, limiter);
     }
   }
 }

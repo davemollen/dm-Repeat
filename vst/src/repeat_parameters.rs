@@ -1,14 +1,15 @@
 use vst::plugin::PluginParameters;
 mod params;
-pub use params::{FloatParam, FloatRange, IntParam, IntRange, Params};
+pub use params::{BoolParam, FloatParam, FloatRange, IntParam, IntRange, Params};
 mod formatters;
-use formatters::{v2s_f32_digits, v2s_f32_percentage, s2v_f32_percentage};
+use formatters::{s2v_f32_percentage, v2s_f32_digits, v2s_f32_percentage};
 
 pub struct RepeatParameters {
   pub freq: FloatParam,
   pub repeats: IntParam,
   pub feedback: FloatParam,
   pub skew: FloatParam,
+  pub limiter: BoolParam,
 }
 
 impl Default for RepeatParameters {
@@ -21,45 +22,33 @@ impl Default for RepeatParameters {
         FloatRange::Skewed {
           min: 0.1,
           max: 50.,
-          factor: 0.3
-        }
+          factor: 0.3,
+        },
       )
       .with_unit(" Hz")
       .with_value_to_string(v2s_f32_digits(2)),
 
-      repeats: IntParam::new(
-        "Repeats",
-        4,
-        1,
-        IntRange::Linear {
-          min: 1,
-          max: 24
-        }
-      )
-      .with_unit(" x"),
+      repeats: IntParam::new("Repeats", 4, 1, IntRange::Linear { min: 1, max: 24 }).with_unit(" x"),
 
       feedback: FloatParam::new(
         "Feedback",
         1.,
         2,
-        FloatRange::Linear { 
-          min: -1.25, 
-          max: 1.25 
-        }
+        FloatRange::Linear {
+          min: -1.25,
+          max: 1.25,
+        },
       )
       .with_unit(" %")
       .with_value_to_string(v2s_f32_percentage(2))
       .with_string_to_value(s2v_f32_percentage()),
 
-      skew: FloatParam::new(
-        "Skew",
-        0.,
-        3,
-        FloatRange::Linear { min: -1., max: 1. }
-      )
-      .with_unit(" %")
-      .with_value_to_string(v2s_f32_percentage(2))
-      .with_string_to_value(s2v_f32_percentage()),
+      skew: FloatParam::new("Skew", 0., 3, FloatRange::Linear { min: -1., max: 1. })
+        .with_unit(" %")
+        .with_value_to_string(v2s_f32_percentage(2))
+        .with_string_to_value(s2v_f32_percentage()),
+
+      limiter: BoolParam::new("Limiter", false, 4),
     }
   }
 }
@@ -71,6 +60,7 @@ impl PluginParameters for RepeatParameters {
       1 => self.repeats.get_normalized_value(),
       2 => self.feedback.get_normalized_value(),
       3 => self.skew.get_normalized_value(),
+      4 => self.limiter.get_normalized_value(),
       _ => 0.0,
     }
   }
@@ -81,6 +71,7 @@ impl PluginParameters for RepeatParameters {
       1 => self.repeats.get_display_value(true),
       2 => self.feedback.get_display_value(true),
       3 => self.skew.get_display_value(true),
+      4 => self.limiter.get_display_value(true),
       _ => "".to_string(),
     }
   }
@@ -91,6 +82,7 @@ impl PluginParameters for RepeatParameters {
       1 => self.repeats.name,
       2 => self.feedback.name,
       3 => self.skew.name,
+      4 => self.limiter.name,
       _ => "",
     }
     .to_string()
@@ -102,6 +94,7 @@ impl PluginParameters for RepeatParameters {
       1 => self.repeats.set_normalized_value(val),
       2 => self.feedback.set_plain_value(val),
       3 => self.skew.set_plain_value(val),
+      4 => self.limiter.set_normalized_value(val),
       _ => (),
     }
   }

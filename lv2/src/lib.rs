@@ -9,6 +9,7 @@ struct Ports {
   repeats: InputPort<Control>,
   feedback: InputPort<Control>,
   skew: InputPort<Control>,
+  limiter: InputPort<Control>,
   input: InputPort<Audio>,
   output: OutputPort<Audio>,
 }
@@ -38,7 +39,7 @@ impl Plugin for DmRepeat {
   // Process a chunk of audio. The audio ports are dereferenced to slices, which the plugin
   // iterates over.
   fn run(&mut self, ports: &mut Ports, _features: &mut (), _sample_count: u32) {
-    let time = *ports.freq.recip() * 1000.;
+    let time = (*ports.freq).recip() * 1000.;
     let repeats = *ports.repeats as usize;
     let feedback = *ports.feedback * 0.01;
     let skew = *ports.skew * 0.01;

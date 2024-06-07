@@ -8,10 +8,11 @@
         modgui:stylesheet <modgui/stylesheet-dm-repeat.css> ;
         modgui:screenshot <modgui/screenshot-dm-repeat.png> ;
         modgui:thumbnail <modgui/thumbnail-dm-repeat.png> ;
+        modgui:javascript <modgui/javascript.js> ;
         modgui:brand "DM" ;
         modgui:label "Repeat" ;
         modgui:model "boxy" ;
-        modgui:panel "4-knobs" ;
+        modgui:panel "5-knobs" ;
         modgui:color "cyan" ;
         modgui:knob "black" ;
         modgui:port [
@@ -30,5 +31,9 @@
             lv2:index 3 ;
             lv2:symbol "skew" ;
             lv2:name "Skew" ;
+        ] , [
+            lv2:index 4 ;
+            lv2:symbol "limiter" ;
+            lv2:name "Limiter" ;
         ] ;
     ] .

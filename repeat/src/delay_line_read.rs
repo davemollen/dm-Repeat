@@ -95,7 +95,7 @@ impl DelayLineRead {
     } else if skew == 0. {
       time * index
     } else {
-      let exponential_skew = skew.abs().fast_pow(2.) * if skew < 0. { -0.5 } else { 1. } + 1.;
+      let exponential_skew = skew * skew * if skew < 0. { -0.5 } else { 1. } + 1.;
       let delay_time = if index == 1. {
         exponential_skew.fast_pow(index - 1.) * time
       } else {

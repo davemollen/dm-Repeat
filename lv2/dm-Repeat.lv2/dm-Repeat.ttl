@@ -21,7 +21,7 @@
 	mod:brand "DM" ;
 	mod:label "Repeat" ;
 	rdfs:comment """
-A delay effect written in Rust.
+A multitap delay effect. From super tight repeats to crescendo's to bouncing ball like sounds.
 """ ;
 	lv2:port [
 		a lv2:InputPort, lv2:ControlPort ;

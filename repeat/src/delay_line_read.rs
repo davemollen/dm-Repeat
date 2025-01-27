@@ -54,7 +54,7 @@ impl DelayLineRead {
     }
   }
 
-  pub fn process(&mut self, input: f32, delay_line: &mut DelayLine) -> f32 {
+  pub fn process(&mut self, input: f32, delay_line: &DelayLine) -> f32 {
     self
       .delay_params
       .iter()

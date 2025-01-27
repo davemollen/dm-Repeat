@@ -58,12 +58,6 @@ impl Repeat {
   }
 
   fn crossfade(&mut self, input: f32) -> f32 {
-    let Self {
-      delay_line,
-      repeats,
-      ..
-    } = self;
-
     let ramp = self.ramp.process();
     let window = (ramp * FRAC_PI_2).fast_sin();
     let window = window * window;
@@ -74,8 +68,8 @@ impl Repeat {
       (1. - window, window)
     };
 
-    let a = repeats[0].process(input, delay_line) * window_a;
-    let b = repeats[1].process(input, delay_line) * window_b;
+    let a = self.repeats[0].process(input, &self.delay_line) * window_a;
+    let b = self.repeats[1].process(input, &self.delay_line) * window_b;
     a + b
   }
 

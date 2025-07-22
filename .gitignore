@@ -1,6 +1,6 @@
 target
 .DS_Store
-*.svg
-*libdm_repeat.so
-*libdm_repeat.dylib
-*libdm_repeat.dll
+flamegraph.svg
+lv2/**/*.so
+lv2/**/*.dylib
+lv2/**/*.dll

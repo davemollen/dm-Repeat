@@ -33,7 +33,7 @@ impl Default for DmRepeat {
 }
 
 impl Plugin for DmRepeat {
-  const NAME: &'static str = "dm-Repeat";
+  const NAME: &'static str = "Repeat";
   const VENDOR: &'static str = "DM";
   const URL: &'static str = "https://github.com/davemollen/dm-Repeat";
   const EMAIL: &'static str = "davemollen@gmail.com";

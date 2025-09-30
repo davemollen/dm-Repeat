@@ -39,11 +39,18 @@ impl Plugin for DmRepeat {
   const EMAIL: &'static str = "davemollen@gmail.com";
   const VERSION: &'static str = env!("CARGO_PKG_VERSION");
 
-  const AUDIO_IO_LAYOUTS: &'static [AudioIOLayout] = &[AudioIOLayout {
-    main_input_channels: NonZeroU32::new(1),
-    main_output_channels: NonZeroU32::new(1),
-    ..AudioIOLayout::const_default()
-  }];
+  const AUDIO_IO_LAYOUTS: &'static [AudioIOLayout] = &[
+    AudioIOLayout {
+      main_input_channels: NonZeroU32::new(2),
+      main_output_channels: NonZeroU32::new(2),
+      ..AudioIOLayout::const_default()
+    },
+    AudioIOLayout {
+      main_input_channels: NonZeroU32::new(1),
+      main_output_channels: NonZeroU32::new(1),
+      ..AudioIOLayout::const_default()
+    },
+  ];
   const MIDI_INPUT: MidiConfig = MidiConfig::None;
   const SAMPLE_ACCURATE_AUTOMATION: bool = true;
 
@@ -82,11 +89,26 @@ impl Plugin for DmRepeat {
     let (time, repeats, feedback, skew, limiter) = self.get_params();
 
     buffer.iter_samples().for_each(|mut channel_samples| {
-      let sample = channel_samples.iter_mut().next().unwrap();
-      let repeat_output = self
-        .repeat
-        .process(*sample, time, repeats, feedback, skew, limiter);
-      *sample = repeat_output;
+      if channel_samples.len() == 2 {
+        let channel_iterator = &mut channel_samples.iter_mut();
+        let left_channel = channel_iterator.next().unwrap();
+        let right_channel = channel_iterator.next().unwrap();
+        let repeat_output = self.repeat.process(
+          (*left_channel + *right_channel) * 0.5,
+          time,
+          repeats,
+          feedback,
+          skew,
+          limiter,
+        );
+        *left_channel = repeat_output;
+        *right_channel = repeat_output;
+      } else {
+        let sample = channel_samples.iter_mut().next().unwrap();
+        *sample = self
+          .repeat
+          .process(*sample, time, repeats, feedback, skew, limiter);
+      };
     });
     ProcessStatus::Normal
   }
@@ -103,16 +125,18 @@ impl ClapPlugin for DmRepeat {
   const CLAP_SUPPORT_URL: Option<&'static str> = None;
   const CLAP_FEATURES: &'static [ClapFeature] = &[
     ClapFeature::AudioEffect,
-    ClapFeature::Stereo,
     ClapFeature::Mono,
-    ClapFeature::Utility,
+    ClapFeature::Delay,
   ];
 }
 
 impl Vst3Plugin for DmRepeat {
   const VST3_CLASS_ID: [u8; 16] = *b"dm-Repeat.......";
-  const VST3_SUBCATEGORIES: &'static [Vst3SubCategory] =
-    &[Vst3SubCategory::Fx, Vst3SubCategory::Delay];
+  const VST3_SUBCATEGORIES: &'static [Vst3SubCategory] = &[
+    Vst3SubCategory::Fx,
+    Vst3SubCategory::Delay,
+    Vst3SubCategory::Mono,
+  ];
 }
 
 nih_export_clap!(DmRepeat);

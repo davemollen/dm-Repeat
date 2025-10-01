@@ -4,8 +4,6 @@ A multitap delay effect written in Rust.
 
 The effect can be compiled to a [MOD audio](https://mod.audio/), VST3, CLAP, AUv2 or LV2 plugin.
 
-More technical information about the Erbe-Verb design can be found in this [talk](https://youtu.be/Il_qdtQKnqk?si=oGm_0KLFcN9MhcBE) and this [research paper](https://quod.lib.umich.edu/cgi/p/pod/dod-idx/building-the-erbe-verb-extending-the-feedback-delay-network.pdf?c=icmc;idno=bbp2372.2015.054;format=pdf).
-
 ## Table of contents:
 
 - [VST3, CLAP, AUv2 & LV2 installation](#VST3-CLAP-AUv2-&-LV2-installation)

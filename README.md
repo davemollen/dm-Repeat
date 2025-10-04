@@ -1,6 +1,6 @@
 ## dm-Repeat
 
-A multitap delay effect written in Rust.
+A multi-tap delay effect written in Rust.
 
 The effect can be compiled to a [MOD audio](https://mod.audio/), VST3, CLAP, AUv2 or LV2 plugin.
 

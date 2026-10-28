@@ -70,18 +70,15 @@ impl Repeat {
 
   fn crossfade(&mut self, input: f32) -> f32 {
     let ramp = self.ramp.process();
-    let window = (ramp * FRAC_PI_2).fast_sin();
-    let window = window * window;
+    let mix_factor = ramp.cubic_spline_curve();
 
-    let (window_a, window_b) = if self.active_index == 0 {
-      (window, 1. - window)
+    let a = self.repeats[0].process(input, &self.delay_line);
+    let b = self.repeats[1].process(input, &self.delay_line);
+    if self.active_index == 1 {
+      a.mix(b, mix_factor)
     } else {
-      (1. - window, window)
-    };
-
-    let a = self.repeats[0].process(input, &self.delay_line) * window_a;
-    let b = self.repeats[1].process(input, &self.delay_line) * window_b;
-    a + b
+      b.mix(a, mix_factor)
+    }
   }
 
   fn repeat(&mut self, input: f32, time: f32, repeats: usize, feedback: f32, skew: f32) -> f32 {

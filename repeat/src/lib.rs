@@ -1,16 +1,20 @@
+mod bypass;
 mod delay_line;
 mod delay_line_read;
 mod shared {
   pub mod float_ext;
+  pub mod macros;
 }
 mod limiter;
 mod ramp;
+pub use bypass::Bypass;
 use {
   delay_line::DelayLine, delay_line_read::DelayLineRead, limiter::Limiter, ramp::Ramp,
   shared::float_ext::FloatExt, std::f32, std::f32::consts::FRAC_PI_2,
 };
 
 pub const MAX_REPEATS: usize = 32;
+const CROSSFADE_FREQUENCY: f32 = 5.;
 
 #[derive(PartialEq, Clone, Copy)]
 pub struct Params {
@@ -34,7 +38,7 @@ impl Repeat {
       delay_line: DelayLine::new(sample_rate as usize * 10, sample_rate),
       active_index: 0,
       repeats: [DelayLineRead::new(), DelayLineRead::new()],
-      ramp: Ramp::new(sample_rate, 5.),
+      ramp: Ramp::new(sample_rate, CROSSFADE_FREQUENCY),
       limiter: Limiter::new(sample_rate, 2., 10., 40., 0.966051),
     }
   }

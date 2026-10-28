@@ -39,6 +39,13 @@ impl Repeat {
     }
   }
 
+  pub fn reset(&mut self) {
+    self.delay_line.reset();
+    self.active_index = 0;
+    self.ramp.reset();
+    self.limiter.reset();
+  }
+
   pub fn initialize_params(&mut self, time: f32, repeats: usize, feedback: f32, skew: f32) {
     self.repeats[self.active_index].initialize(time, repeats, feedback, skew)
   }

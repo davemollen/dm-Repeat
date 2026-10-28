@@ -80,6 +80,12 @@ impl Plugin for DmRepeat {
     true
   }
 
+  fn reset(&mut self) {
+    self.repeat.reset();
+    let (time, repeats, feedback, skew, _) = self.get_params();
+    self.repeat.initialize_params(time, repeats, feedback, skew);
+  }
+
   fn process(
     &mut self,
     buffer: &mut Buffer,

@@ -17,7 +17,7 @@ struct Ports {
 #[uri("https://github.com/davemollen/dm-Repeat")]
 struct DmRepeat {
   repeat: Repeat,
-  is_active: bool,
+  is_initialized: bool,
 }
 
 impl Plugin for DmRepeat {
@@ -32,8 +32,14 @@ impl Plugin for DmRepeat {
   fn new(_plugin_info: &PluginInfo, _features: &mut ()) -> Option<Self> {
     Some(Self {
       repeat: Repeat::new(_plugin_info.sample_rate() as f32),
-      is_active: false,
+      is_initialized: false,
     })
+  }
+
+  /// Reset the internal state of the plugin.
+  fn activate(&mut self, _features: &mut Self::InitFeatures) {
+    self.repeat.reset();
+    self.is_initialized = false;
   }
 
   // Process a chunk of audio. The audio ports are dereferenced to slices, which the plugin
@@ -45,9 +51,9 @@ impl Plugin for DmRepeat {
     let skew = ports.skew.get() * 0.01;
     let limiter = ports.limiter.get() == 1.;
 
-    if !self.is_active {
+    if !self.is_initialized {
       self.repeat.initialize_params(time, repeats, feedback, skew);
-      self.is_active = true;
+      self.is_initialized = true;
     }
 
     for (input, output) in ports.input.iter().zip(ports.output.iter()) {
